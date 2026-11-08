@@ -266,7 +266,8 @@ MODELS = {
 # 2. STYLE
 # ─────────────────────────────────────────────────────────────
 
-st.set_page_config(page_title="Prédictions", page_icon="◐", layout="wide")
+st.set_page_config(page_title="Prédictions", page_icon="◐", layout="wide",
+                   initial_sidebar_state="expanded")
 
 CSS = """
 <style>
@@ -293,7 +294,14 @@ html, body, [class*="css"], .stApp {
   background: radial-gradient(1100px 420px at 85% -8%, #E8D6B8 0%, rgba(232,214,184,0) 65%), var(--bg);
 }
 
-#MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; height: 0; }
+#MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"] { visibility: hidden; }
+header[data-testid="stHeader"] { background: transparent; }
+/* Sur ordinateur : on retire le bouton qui replie la barre des modèles, pour qu'elle reste toujours visible */
+@media (min-width: 992px) {
+  section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
+  section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button,
+  section[data-testid="stSidebar"] button[kind="header"] { display: none; }
+}
 .block-container { max-width: 900px; padding-top: 3.2rem; padding-bottom: 4rem; }
 
 /* Barre latérale */
