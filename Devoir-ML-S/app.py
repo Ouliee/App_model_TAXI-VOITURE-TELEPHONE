@@ -187,6 +187,7 @@ def predict_carcls(bundle, X: pd.DataFrame):
 MODELS = {
     "voiture": {
         "title": "Prix d'une voiture",
+        "nav": "Prix voiture",
         "description": "Estime le prix de vente d'une voiture d'occasion à partir de son âge, de son kilométrage et de ses caractéristiques.",
         "path": str(CAR_DIR / "rf_model.joblib"),
         "files": CAR_FILES,
@@ -205,6 +206,7 @@ MODELS = {
     },
     "taxi": {
         "title": "Prix d'une course de taxi",
+        "nav": "Prix taxi",
         "description": "Estime le prix d'une course à partir de la distance, de la durée, du trafic, de la météo et des tarifs appliqués.",
         "path": str(TAXI_DIR / "rf_model.joblib"),
         "files": TAXI_FILES,
@@ -227,6 +229,7 @@ MODELS = {
     },
     "telephone": {
         "title": "État d'un téléphone",
+        "nav": "État téléphone",
         "description": "Détermine si un téléphone est d'occasion, neuf, réconditionné ou venant, à partir de son prix et de ses caractéristiques.",
         "path": str(PHONE_DIR / "rf_model.joblib"),
         "files": PHONE_FILES,
@@ -245,6 +248,7 @@ MODELS = {
     },
     "voiture_etat": {
         "title": "État d'une voiture",
+        "nav": "État voiture",
         "description": "Détermine si une voiture est « Venant » ou d'occasion, à partir de sa marque, de son année, de sa boîte, de son adresse et de son prix.",
         "path": str(CARCLS_DIR / "rf_model.joblib"),
         "files": CARCLS_FILES,
@@ -267,7 +271,7 @@ MODELS = {
 # ─────────────────────────────────────────────────────────────
 
 st.set_page_config(page_title="Prédictions", page_icon="◐", layout="wide",
-                   initial_sidebar_state="expanded")
+                   initial_sidebar_state="collapsed")
 
 CSS = """
 <style>
@@ -296,30 +300,24 @@ html, body, [class*="css"], .stApp {
 
 #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"] { visibility: hidden; }
 header[data-testid="stHeader"] { background: transparent; }
-/* Sur ordinateur : on retire le bouton qui replie la barre des modèles, pour qu'elle reste toujours visible */
-@media (min-width: 992px) {
-  section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
-  section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button,
-  section[data-testid="stSidebar"] button[kind="header"] { display: none; }
-}
-.block-container { max-width: 900px; padding-top: 3.2rem; padding-bottom: 4rem; }
+.block-container { max-width: 900px; padding-top: 2.4rem; padding-bottom: 4rem; }
 
-/* Barre latérale */
-section[data-testid="stSidebar"] { background: var(--espresso); border-right: none; }
-section[data-testid="stSidebar"] .block-container { padding-top: 2.6rem; }
-section[data-testid="stSidebar"], section[data-testid="stSidebar"] * { color: var(--cream); }
-section[data-testid="stSidebar"] div[role="radiogroup"] { gap: .3rem; }
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-  padding: .6rem .8rem; border-radius: 12px; width: 100%; transition: background .15s;
+/* Navigation en haut */
+section[data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] { display: none; }
+.brand { font-family: 'Fraunces', Georgia, serif !important; font-weight: 600; font-size: 1.45rem; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 1rem; }
+.brand span { color: var(--accent); font-style: italic; }
+div[role="radiogroup"] { flex-wrap: wrap; gap: .55rem; }
+div[role="radiogroup"] label {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 99px;
+  padding: .5rem 1.15rem; margin: 0; cursor: pointer; transition: all .15s;
 }
-section[data-testid="stSidebar"] div[role="radiogroup"] label:hover { background: rgba(246,237,224,.08); }
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-  background: rgba(224,176,122,.18);
-  box-shadow: inset 3px 0 0 var(--caramel);
+div[role="radiogroup"] label > div:first-child { display: none; }
+div[role="radiogroup"] label p { color: var(--ink) !important; font-weight: 600; font-size: .9rem; }
+div[role="radiogroup"] label:hover { border-color: var(--accent); }
+div[role="radiogroup"] label:has(input:checked) {
+  background: var(--espresso); border-color: var(--espresso); box-shadow: 0 10px 22px -14px rgba(43,30,22,.8);
 }
-.brand { font-family: 'Fraunces', Georgia, serif !important; font-weight: 600; font-size: 1.5rem; letter-spacing: -0.01em; margin-bottom: 1.6rem; }
-.brand span { color: var(--caramel); font-style: italic; }
-.side-note { color: #B9A58C !important; font-size: .78rem; margin-top: 2.2rem; line-height: 1.5; }
+div[role="radiogroup"] label:has(input:checked) p { color: var(--cream) !important; }
 
 /* En-tête de page */
 .tag {
@@ -525,18 +523,15 @@ def multiple_prediction(model_key: str, cfg: dict, model):
 # 4. INTERFACE
 # ─────────────────────────────────────────────────────────────
 
-with st.sidebar:
-    st.markdown("<div class='brand'>Prédic<span>tions</span></div>", unsafe_allow_html=True)
-    model_key = st.radio(
-        "Modèle",
-        list(MODELS.keys()),
-        format_func=lambda k: MODELS[k]["title"],
-        label_visibility="collapsed",
-    )
-    st.markdown(
-        "<div class='side-note'>4 modèles · prédiction simple<br>ou sur un fichier CSV</div>",
-        unsafe_allow_html=True,
-    )
+st.markdown("<div class='brand'>Prédic<span>tions</span></div>", unsafe_allow_html=True)
+model_key = st.radio(
+    "Modèle",
+    list(MODELS.keys()),
+    format_func=lambda k: MODELS[k].get("nav", MODELS[k]["title"]),
+    horizontal=True,
+    label_visibility="collapsed",
+)
+st.write("")
 
 cfg = MODELS[model_key]
 tag = "Régression" if cfg["task"] == "regression" else "Classification"
