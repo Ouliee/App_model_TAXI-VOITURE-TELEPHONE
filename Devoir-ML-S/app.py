@@ -523,7 +523,7 @@ def multiple_prediction(model_key: str, cfg: dict, model):
 # 4. INTERFACE
 # ─────────────────────────────────────────────────────────────
 
-st.markdown("<div class='brand'>Prédic<span>tions</span></div>", unsafe_allow_html=True)
+st.markdown("<div class='brand'>Prédic<span>tions</span> OSK </div>", unsafe_allow_html=True)
 model_key = st.radio(
     "Modèle",
     list(MODELS.keys()),
