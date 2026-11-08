@@ -4,10 +4,26 @@ import joblib
 import pandas as pd
 import streamlit as st
 
+BASE_DIR = Path(__file__).resolve().parent  # les modèles sont cherchés à côté de app.py
+
+
+def resolve(path: Path, check=None) -> Path:
+    """Trouve un fichier .joblib, même renommé par le navigateur ('uniques (1).joblib').
+    `check` permet de ne garder que le fichier au bon contenu."""
+    others = sorted(p for p in path.parent.glob(f"{path.stem}*{path.suffix}") if p != path)
+    for p in ([path] if path.exists() else []) + others:
+        try:
+            if check is None or check(joblib.load(p)):
+                return p
+        except Exception:  # noqa: BLE001
+            continue
+    raise FileNotFoundError(f"{path.name} introuvable (ou invalide) dans {path.parent}")
+
+
 # ─────────────────────────────────────────────────────────────
 # Modèle voiture : chargement + prétraitement (identique au notebook)
 # ─────────────────────────────────────────────────────────────
-CAR_DIR = Path("models/voiture")
+CAR_DIR = BASE_DIR / "models" / "voiture"
 CAR_FILES = [str(CAR_DIR / n) for n in ("rf_model.joblib", "scaler.joblib", "encoders.joblib")]
 CAR_CATS = ["Fuel_Type", "Seller_Type", "Transmission"]  # même ordre que encoders.joblib
 CAR_ORDER = ["Kms_Driven", "Present_Price", "Fuel_Type", "Seller_Type", "Transmission", "Age"]
@@ -15,9 +31,9 @@ CAR_ORDER = ["Kms_Driven", "Present_Price", "Fuel_Type", "Seller_Type", "Transmi
 
 def load_car():
     return {
-        "model": joblib.load(CAR_DIR / "rf_model.joblib"),
-        "scaler": joblib.load(CAR_DIR / "scaler.joblib"),
-        "encoders": joblib.load(CAR_DIR / "encoders.joblib"),
+        "model": joblib.load(resolve(CAR_DIR / "rf_model.joblib")),
+        "scaler": joblib.load(resolve(CAR_DIR / "scaler.joblib")),
+        "encoders": joblib.load(resolve(CAR_DIR / "encoders.joblib")),
     }
 
 
@@ -38,7 +54,7 @@ def predict_car(bundle, X: pd.DataFrame):
 # ─────────────────────────────────────────────────────────────
 # Modèle téléphone : chargement + prétraitement (identique au notebook)
 # ─────────────────────────────────────────────────────────────
-PHONE_DIR = Path("models/telephone")
+PHONE_DIR = BASE_DIR / "models" / "telephone"
 PHONE_FILES = [str(PHONE_DIR / n) for n in ("rf_model.joblib", "scale.joblib", "uniques.joblib")]
 PHONE_ORDER = ["prix", "adresse", "marque", "dim_ecr", "ram", "stockage"]
 PHONE_CATS = ["adresse", "marque"]  # ordre de uniques.joblib : adresse, marque, etat
@@ -48,11 +64,11 @@ def load_phone():
     # NB : on encode avec uniques.joblib et non encoder.joblib. Dans le notebook,
     # le même LabelEncoder a été ré-ajusté à chaque colonne : encoder.joblib ne
     # connaît donc que les classes de la dernière colonne (etat).
-    uniques = joblib.load(PHONE_DIR / "uniques.joblib")
+    uniques = joblib.load(resolve(PHONE_DIR / "uniques.joblib", lambda u: len(u) == 3 and len(u[2]) == 4))
     classes = dict(zip(PHONE_CATS, uniques))
     return {
-        "model": joblib.load(PHONE_DIR / "rf_model.joblib"),
-        "scaler": joblib.load(PHONE_DIR / "scale.joblib"),
+        "model": joblib.load(resolve(PHONE_DIR / "rf_model.joblib")),
+        "scaler": joblib.load(resolve(PHONE_DIR / "scale.joblib")),
         "classes": classes,
         "options": classes,  # alimente les listes déroulantes du formulaire
     }
@@ -77,7 +93,7 @@ def predict_phone(bundle, X: pd.DataFrame):
 # ─────────────────────────────────────────────────────────────
 # Modèle taxi : chargement + prétraitement (identique au notebook)
 # ─────────────────────────────────────────────────────────────
-TAXI_DIR = Path("models/taxi")
+TAXI_DIR = BASE_DIR / "models" / "taxi"
 TAXI_FILES = [str(TAXI_DIR / n) for n in ("rf_model.joblib", "scaler.joblib", "encoders.joblib")]
 TAXI_CATS = ["Time_of_Day", "Day_of_Week", "Traffic_Conditions", "Weather"]  # ordre de encoders.joblib
 TAXI_ORDER = [
@@ -87,10 +103,10 @@ TAXI_ORDER = [
 
 
 def load_taxi():
-    encoders = joblib.load(TAXI_DIR / "encoders.joblib")
+    encoders = joblib.load(resolve(TAXI_DIR / "encoders.joblib"))
     return {
-        "model": joblib.load(TAXI_DIR / "rf_model.joblib"),
-        "scaler": joblib.load(TAXI_DIR / "scaler.joblib"),
+        "model": joblib.load(resolve(TAXI_DIR / "rf_model.joblib")),
+        "scaler": joblib.load(resolve(TAXI_DIR / "scaler.joblib")),
         "encoders": encoders,
         "options": {c: list(e.classes_) for c, e in zip(TAXI_CATS, encoders)},
     }
@@ -113,7 +129,7 @@ def predict_taxi(bundle, X: pd.DataFrame):
 # ─────────────────────────────────────────────────────────────
 # Modèle état de la voiture (Venant / D'occasion) : prétraitement du notebook
 # ─────────────────────────────────────────────────────────────
-CARCLS_DIR = Path("models/voiture_etat")
+CARCLS_DIR = BASE_DIR / "models" / "voiture_etat"
 CARCLS_FILES = [str(CARCLS_DIR / n) for n in ("rf_model.joblib", "scaler.joblib", "uniques.joblib")]
 CARCLS_ORDER = ["Marque", "Année", "Boite_Vitesse", "Adresse", "Prix"]
 CARCLS_CATS = ["Marque", "Boite_Vitesse", "Adresse"]  # ordre de uniques.joblib (puis Venant_Occasion)
@@ -122,11 +138,11 @@ CARCLS_CATS = ["Marque", "Boite_Vitesse", "Adresse"]  # ordre de uniques.joblib 
 def load_carcls():
     # NB : encodage via uniques.joblib (encoder.joblib ne connaît que la dernière colonne,
     # le même LabelEncoder ayant été ré-ajusté à chaque colonne dans le notebook).
-    uniques = joblib.load(CARCLS_DIR / "uniques.joblib")
+    uniques = joblib.load(resolve(CARCLS_DIR / "uniques.joblib", lambda u: len(u) == 4 and len(u[3]) == 2))
     classes = dict(zip(CARCLS_CATS, uniques))
     return {
-        "model": joblib.load(CARCLS_DIR / "rf_model.joblib"),
-        "scaler": joblib.load(CARCLS_DIR / "scaler.joblib"),
+        "model": joblib.load(resolve(CARCLS_DIR / "rf_model.joblib")),
+        "scaler": joblib.load(resolve(CARCLS_DIR / "scaler.joblib")),
         "classes": classes,
         "options": classes,
     }
@@ -253,8 +269,9 @@ MODELS = {
 st.set_page_config(page_title="Prédictions", page_icon="◐", layout="wide")
 
 CSS = """
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
   --bg: #F6F7F9;
@@ -281,6 +298,9 @@ section[data-testid="stSidebar"] {
   border-right: 1px solid var(--line);
 }
 section[data-testid="stSidebar"] .block-container { padding-top: 2.5rem; }
+section[data-testid="stSidebar"], section[data-testid="stSidebar"] * { color: var(--ink); }
+h1.page-title, p.page-sub, .brand, .result, label, .stTabs button, .stButton button,
+.stDownloadButton button, input, section[data-testid="stSidebar"] p { font-family: 'Manrope', sans-serif !important; }
 .brand { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
 .brand span { color: var(--accent); }
 
@@ -482,12 +502,19 @@ cfg = MODELS[model_key]
 st.markdown(f"<h1 class='page-title'>{cfg['title']}</h1>", unsafe_allow_html=True)
 st.markdown(f"<p class='page-sub'>{cfg['description']}</p>", unsafe_allow_html=True)
 
-missing_files = [p for p in cfg.get("files", [cfg["path"]]) if not Path(p).exists()]
+missing_files = [
+    Path(p) for p in cfg.get("files", [cfg["path"]])
+    if not any(Path(p).parent.glob(f"{Path(p).stem}*{Path(p).suffix}"))
+]
 if missing_files:
-    st.error("Fichiers introuvables : " + ", ".join(f"`{p}`" for p in missing_files))
+    st.error("Fichiers introuvables : " + ", ".join(f"`{p.relative_to(BASE_DIR)}`" for p in missing_files))
     st.stop()
 
-model = load_model(model_key)
+try:
+    model = load_model(model_key)
+except Exception as e:  # noqa: BLE001
+    st.error(f"Chargement du modèle impossible : {type(e).__name__} — {e}")
+    st.stop()
 
 tab_single, tab_multi = st.tabs(["Prédiction simple", "Prédiction multiple"])
 with tab_single:
