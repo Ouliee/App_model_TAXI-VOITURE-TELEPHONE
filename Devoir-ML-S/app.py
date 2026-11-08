@@ -269,9 +269,8 @@ MODELS = {
 st.set_page_config(page_title="Prédictions", page_icon="◐", layout="wide")
 
 CSS = """
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
   --bg: #F6F7F9;
@@ -352,7 +351,8 @@ div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-w
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 """
-st.markdown(CSS, unsafe_allow_html=True)
+# Pas de ligne vide : Markdown couperait le bloc <style> et afficherait le CSS en texte
+st.markdown("\n".join(l for l in CSS.splitlines() if l.strip()), unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
 # 3. LOGIQUE
