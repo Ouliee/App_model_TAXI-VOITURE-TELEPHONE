@@ -270,83 +270,109 @@ st.set_page_config(page_title="Prédictions", page_icon="◐", layout="wide")
 
 CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg: #F6F7F9;
-  --surface: #FFFFFF;
-  --ink: #161A23;
-  --muted: #6B7280;
-  --line: #E4E7EC;
-  --accent: #3B4EF0;
-  --accent-soft: #EEF0FE;
+  --bg: #F2E9DA;
+  --surface: #FBF6ED;
+  --ink: #2E2118;
+  --muted: #8C7763;
+  --line: #E2D3BC;
+  --accent: #A4622D;
+  --accent-dark: #7A4421;
+  --espresso: #2B1E16;
+  --cream: #F6EDE0;
+  --caramel: #E0B07A;
 }
 
 html, body, [class*="css"], .stApp {
   font-family: 'Manrope', sans-serif;
   color: var(--ink);
 }
-.stApp { background: var(--bg); }
+.stApp {
+  background: radial-gradient(1100px 420px at 85% -8%, #E8D6B8 0%, rgba(232,214,184,0) 65%), var(--bg);
+}
 
 #MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; height: 0; }
-.block-container { max-width: 920px; padding-top: 3rem; padding-bottom: 4rem; }
+.block-container { max-width: 900px; padding-top: 3.2rem; padding-bottom: 4rem; }
 
-/* Sidebar */
-section[data-testid="stSidebar"] {
-  background: var(--surface);
-  border-right: 1px solid var(--line);
+/* Barre latérale */
+section[data-testid="stSidebar"] { background: var(--espresso); border-right: none; }
+section[data-testid="stSidebar"] .block-container { padding-top: 2.6rem; }
+section[data-testid="stSidebar"], section[data-testid="stSidebar"] * { color: var(--cream); }
+section[data-testid="stSidebar"] div[role="radiogroup"] { gap: .3rem; }
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+  padding: .6rem .8rem; border-radius: 12px; width: 100%; transition: background .15s;
 }
-section[data-testid="stSidebar"] .block-container { padding-top: 2.5rem; }
-section[data-testid="stSidebar"], section[data-testid="stSidebar"] * { color: var(--ink); }
-h1.page-title, p.page-sub, .brand, .result, label, .stTabs button, .stButton button,
-.stDownloadButton button, input, section[data-testid="stSidebar"] p { font-family: 'Manrope', sans-serif !important; }
-.brand { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
-.brand span { color: var(--accent); }
+section[data-testid="stSidebar"] div[role="radiogroup"] label:hover { background: rgba(246,237,224,.08); }
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+  background: rgba(224,176,122,.18);
+  box-shadow: inset 3px 0 0 var(--caramel);
+}
+.brand { font-family: 'Fraunces', Georgia, serif !important; font-weight: 600; font-size: 1.5rem; letter-spacing: -0.01em; margin-bottom: 1.6rem; }
+.brand span { color: var(--caramel); font-style: italic; }
+.side-note { color: #B9A58C !important; font-size: .78rem; margin-top: 2.2rem; line-height: 1.5; }
 
-/* Titres */
-h1.page-title { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 .25rem 0; }
-p.page-sub { color: var(--muted); margin: 0 0 2rem 0; font-size: 1rem; }
+/* En-tête de page */
+.tag {
+  display: inline-block; padding: .28rem .75rem; border-radius: 99px; background: #EADBC2; color: var(--accent-dark);
+  font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1rem;
+}
+h1.page-title {
+  font-family: 'Fraunces', Georgia, serif !important; font-size: 2.8rem; font-weight: 600;
+  letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 .6rem 0; color: var(--ink);
+}
+p.page-sub { color: var(--muted); margin: 0 0 2.2rem 0; font-size: 1.02rem; max-width: 640px; line-height: 1.6; }
 
 /* Onglets */
-.stTabs [data-baseweb="tab-list"] { gap: 1.5rem; border-bottom: 1px solid var(--line); }
-.stTabs [data-baseweb="tab"] { padding: .6rem 0; font-weight: 600; color: var(--muted); background: transparent; }
+.stTabs [data-baseweb="tab-list"] { gap: 1.8rem; border-bottom: 1px solid var(--line); }
+.stTabs [data-baseweb="tab"] { padding: .7rem 0; font-weight: 600; color: var(--muted); background: transparent; }
+.stTabs [data-baseweb="tab"] p { color: inherit !important; }
 .stTabs [aria-selected="true"] { color: var(--ink); }
-.stTabs [data-baseweb="tab-highlight"] { background: var(--accent); height: 2px; }
+.stTabs [data-baseweb="tab-highlight"] { background: var(--accent); height: 3px; border-radius: 3px; }
 .stTabs [data-baseweb="tab-border"] { display: none; }
 
 /* Champs */
-label, .stNumberInput label, .stSelectbox label { font-weight: 600 !important; font-size: .85rem !important; }
-div[data-baseweb="input"], div[data-baseweb="select"] > div {
-  border-radius: 10px !important; background: var(--surface) !important; border-color: var(--line) !important;
+[data-testid="stWidgetLabel"] p, [data-testid="stWidgetLabel"] label { color: var(--ink) !important; font-weight: 600 !important; font-size: .82rem !important; }
+div[data-baseweb="input"], div[data-baseweb="select"] > div, div[data-baseweb="base-input"] {
+  border-radius: 12px !important; background: var(--surface) !important; border-color: var(--line) !important;
 }
-div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
-  border-color: var(--accent) !important;
-}
+div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within { border-color: var(--accent) !important; }
+div[data-baseweb="input"] input, div[data-baseweb="select"] * { color: var(--ink) !important; }
+[data-testid="stCaptionContainer"] { color: var(--muted) !important; }
 
 /* Boutons */
 .stButton > button, .stDownloadButton > button {
-  border-radius: 10px; font-weight: 700; padding: .65rem 1.4rem;
+  border-radius: 12px; font-weight: 700; padding: .7rem 1.6rem;
   border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-  transition: border-color .15s, background .15s;
+  transition: all .15s;
 }
-.stButton > button:hover, .stDownloadButton > button:hover { border-color: var(--accent); color: var(--accent); }
-.stButton > button[kind="primary"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-.stButton > button[kind="primary"]:hover { background: #2B3CD4; border-color: #2B3CD4; color: #fff; }
+.stButton > button p, .stDownloadButton > button p { color: inherit !important; }
+.stButton > button:hover, .stDownloadButton > button:hover { border-color: var(--accent); color: var(--accent-dark); }
+.stButton > button[kind="primary"], .stButton > button[data-testid="stBaseButton-primary"] {
+  background: var(--espresso); border-color: var(--espresso); color: var(--cream);
+  box-shadow: 0 10px 22px -14px rgba(43,30,22,.8);
+}
+.stButton > button[kind="primary"]:hover, .stButton > button[data-testid="stBaseButton-primary"]:hover {
+  background: var(--accent-dark); border-color: var(--accent-dark); color: #fff;
+}
 
 /* Résultat */
 .result {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
-  padding: 1.6rem 1.8rem; margin-top: 1.5rem;
+  background: linear-gradient(135deg, #2B1E16 0%, #4A3123 100%); color: var(--cream);
+  border-radius: 22px; padding: 1.9rem 2.1rem; margin-top: 1.8rem;
+  box-shadow: 0 22px 44px -26px rgba(43,30,22,.7);
 }
-.result .k { color: var(--muted); font-size: .85rem; font-weight: 600; }
-.result .v { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
-.result .c { color: var(--accent); font-weight: 700; margin-top: .3rem; }
+.result .k { color: #CDB79B; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; }
+.result .v { font-family: 'Fraunces', Georgia, serif; font-size: 3.1rem; font-weight: 600; line-height: 1.1; color: var(--cream); margin-top: .5rem; }
+.result .c { color: var(--caramel); font-weight: 600; margin-top: 1rem; font-size: .9rem; }
+.bar { height: 6px; border-radius: 99px; background: rgba(246,237,224,.16); margin-top: .55rem; overflow: hidden; }
+.bar span { display: block; height: 100%; background: linear-gradient(90deg, #D9A066, #EBCB98); border-radius: 99px; }
 
-/* Upload & tableau */
-[data-testid="stFileUploader"] section {
-  border-radius: 14px; border: 1.5px dashed var(--line); background: var(--surface);
-}
-[data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+/* Import & tableau */
+[data-testid="stFileUploader"] section { border-radius: 16px; border: 1.5px dashed #CDB79B; background: var(--surface); }
+[data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+[data-testid="stAlert"] { border-radius: 14px; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -432,7 +458,10 @@ def single_prediction(model_key: str, cfg: dict, model):
             value = f"{value:,.2f} {cfg.get('unit', '')}".strip().replace(",", " ")
         conf = ""
         if "confiance" in res:
-            conf = f"<div class='c'>Confiance : {res['confiance']:.1%}</div>"
+            conf = (
+                f"<div class='c'>Confiance : {res['confiance']:.1%}</div>"
+                f"<div class='bar'><span style='width:{res['confiance'] * 100:.0f}%'></span></div>"
+            )
 
         st.markdown(
             f"<div class='result'><div class='k'>Résultat</div>"
@@ -496,8 +525,14 @@ with st.sidebar:
         format_func=lambda k: MODELS[k]["title"],
         label_visibility="collapsed",
     )
+    st.markdown(
+        "<div class='side-note'>4 modèles · prédiction simple<br>ou sur un fichier CSV</div>",
+        unsafe_allow_html=True,
+    )
 
 cfg = MODELS[model_key]
+tag = "Régression" if cfg["task"] == "regression" else "Classification"
+st.markdown(f"<span class='tag'>{tag}</span>", unsafe_allow_html=True)
 
 st.markdown(f"<h1 class='page-title'>{cfg['title']}</h1>", unsafe_allow_html=True)
 st.markdown(f"<p class='page-sub'>{cfg['description']}</p>", unsafe_allow_html=True)
